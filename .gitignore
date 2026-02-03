@@ -1,0 +1,11 @@
+# -------------------------------------------------
+# These files will be ignored be the git add command.
+# -------------------------------------------------
+# 
+venv/
+.venv/
+.env/
+ENV/
+env/
+.virtualenv/
+__pycache__/
