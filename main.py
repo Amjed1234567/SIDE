@@ -37,11 +37,9 @@ for row in data_list_2D:
     Y[i][j] = 1        
 
 def main():
-    print("This is the Y matrix: ")
-    print(Y)
-    print("Dicts: ")
-    print(drug_number_dict)
-    print(SE_number_dict)
+    print("Total number of drugs = ", total_no_of_drugs)
+    print("Total number of side-effects = ", total_no_of_SE)
+    print("Shape of Y matrix = ", Y.shape)
     
 if __name__ == "__main__":
     main()
