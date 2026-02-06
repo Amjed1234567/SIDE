@@ -1,9 +1,9 @@
 import pandas as pd
-import numpy as np
+import torch
 
-data_file = "Test.xlsx" 
+data_file = "meddra_all_se.tsv.xlsx" 
 drug_column_index = 0 
-SE_column_index = 1 # Side effects.
+SE_column_index = 4 # Side effects.
    
 df = pd.read_excel(data_file, header=None)
 # Convert Dataframe to 2D list.
@@ -30,11 +30,12 @@ drug_number_dict = dict([(value, key) for key, value in number_drug_dict.items()
 SE_number_dict = dict([(value, key) for key, value in number_SE_dict.items()])
 
 # Create Y matrix.
-Y = np.zeros((total_no_of_drugs, total_no_of_SE))
+Y = torch.zeros([total_no_of_drugs, total_no_of_SE], dtype=torch.int32)
 for row in data_list_2D:
-    i = drug_number_dict[row[0]]
-    j = SE_number_dict[row[1]]
+    i = drug_number_dict[row[drug_column_index]]
+    j = SE_number_dict[row[SE_column_index]]
     Y[i][j] = 1        
+
 
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
