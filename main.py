@@ -68,8 +68,8 @@ def distance_in_latent_space(w, v):
     """Calculating distance betwen two points in latent space.
 
     Args:
-        w (torch.tensor): Tensor of shape (total_no_of_drugs, latent_space_dimension).
-        v (torch.tensor): Tensor of shape (total_no_of_SE, latent_space_dimension).
+        w (torch.tensor): Shape (total_no_of_drugs, latent_space_dimension).
+        v (torch.tensor): Shape (total_no_of_SE, latent_space_dimension).
     
     Returns a Tensor of shape (total_no_of_drugs, total_no_of_SE) where entry (i,j) = ||w_i - v_j||
     """
@@ -80,6 +80,29 @@ def distance_in_latent_space(w, v):
     # ord=2 is the Euclidean norm. 
     return torch.linalg.norm(difference, ord=2, dim=2)
     
+
+def negative_loglikelihood():
+    """Calculating the negative loglikelihood (NLL).
+    
+    Args:
+        Y (torch.tensor): Shape (total_no_of_drugs, total_no_of_SE) with entries 0/1.
+        w (torch.tensor): Shape (total_no_of_drugs, latent_space_dimension).
+        v (torch.tensor): Shape (total_no_of_SE, latent_space_dimension).
+    
+    Returns a scalar Tensor (the NLL)
+    """
+    # Broadcast psi and omega to matrix shape.
+    psi_matrix   = psi[:, None]  # (total_no_of_drugs, 1)
+    omega_matrix = omega[None, :] # (1, total_no_of_SE)
+    
+    # Shape of eta is (total_no_of_drugs, total_no_of_SE)
+    eta = psi_matrix + omega_matrix - distance_in_latent_space(w, v)
+    
+    # https://docs.pytorch.org/docs/stable/generated/torch.log1p.html
+    one_pair_of_ij = -torch.log1p(torch.exp(eta)) + Y * eta
+    
+    # Sum over all i, j = NLL.
+    return -1*one_pair_of_ij.sum() 
 
 
 def main():
