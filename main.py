@@ -1,6 +1,7 @@
 import pandas as pd
 import torch
 import numpy as np
+import matplotlib.pyplot as plt 
 
 ### Data preparation section ###
 
@@ -63,6 +64,23 @@ v = torch.from_numpy(np.random.randn(total_no_of_SE, latent_space_dimension)).fl
 
 ### End of initialization of parameters. ###
 
+def distance_in_latent_space(w, v):
+    """Calculating distance betwen two points in latent space.
+
+    Args:
+        w (torch.tensor): Tensor of shape (total_no_of_drugs, latent_space_dimension).
+        v (torch.tensor): Tensor of shape (total_no_of_SE, latent_space_dimension).
+    
+    Returns a Tensor of shape (total_no_of_drugs, total_no_of_SE) where entry (i,j) = ||w_i - v_j||
+    """
+    # Broadcasting: (total_no_of_drugs, 1, latent_space_dimension) - 
+    # (1, total_no_of_SE, latent_space_dimension) -> 
+    # (total_no_of_drugs, total_no_of_SE, latent_space_dimension)
+    difference = w[:, None, :] - v[None, :, :]
+    # ord=2 is the Euclidean norm. 
+    return torch.linalg.norm(difference, ord=2, dim=2)
+    
+
 
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
@@ -74,6 +92,7 @@ def main():
     print(f"w (drug latents) shape : {w.shape}")
     print(f"v (SE latents) shape   : {v.shape}")
     print("----------------------------------------\n")
+    print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
     
 if __name__ == "__main__":
     main()
