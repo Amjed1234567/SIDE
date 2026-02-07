@@ -1,5 +1,8 @@
 import pandas as pd
 import torch
+import numpy as np
+
+### Data preparation section ###
 
 data_file = "meddra_all_se.tsv.xlsx" 
 drug_column_index = 0 
@@ -36,11 +39,41 @@ for row in data_list_2D:
     j = SE_number_dict[row[SE_column_index]]
     Y[i][j] = 1        
 
+### End of data preparation section ###
+
+
+### Initialization of parameters. ###
+
+latent_space_dimension = 3
+seed_for_random = 42 # For reproducibility.
+torch.manual_seed(seed_for_random) 
+np.random.seed(seed_for_random)
+
+# Random effect psi. One value for each drug.
+psi = torch.from_numpy(np.random.randn(total_no_of_drugs)).float()
+# Random effect psi. One value for each side‑effect.
+omega = torch.from_numpy(np.random.randn(total_no_of_SE)).float()
+
+# Latent position w_i for each drug, shape (total_no_of_drugs, latent_space_dimension).
+w = torch.from_numpy(np.random.randn(total_no_of_drugs, latent_space_dimension)).float()
+
+# Latent position v_j for each side‑effect, shape (total_no_of_SE, latent_space_dimension).
+v = torch.from_numpy(np.random.randn(total_no_of_SE, latent_space_dimension)).float()
+
+
+### End of initialization of parameters. ###
+
 
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
     print("Total number of side-effects = ", total_no_of_SE)
     print("Shape of Y matrix = ", Y.shape)
+    print("\n--- Parameter initialisation summary ---")
+    print(f"psi shape          : {psi.shape}")
+    print(f"omega shape        : {omega.shape}")
+    print(f"w (drug latents) shape : {w.shape}")
+    print(f"v (SE latents) shape   : {v.shape}")
+    print("----------------------------------------\n")
     
 if __name__ == "__main__":
     main()
