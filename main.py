@@ -81,13 +81,15 @@ def distance_in_latent_space(w, v):
     return torch.linalg.norm(difference, ord=2, dim=2)
     
 
-def negative_loglikelihood():
+def negative_loglikelihood(Y, psi, omega, w, v):
     """Calculating the negative loglikelihood (NLL).
     
     Args:
         Y (torch.tensor): Shape (total_no_of_drugs, total_no_of_SE) with entries 0/1.
         w (torch.tensor): Shape (total_no_of_drugs, latent_space_dimension).
         v (torch.tensor): Shape (total_no_of_SE, latent_space_dimension).
+        psi (torch.tensor): Shape (total_no_of_drugs,)
+        omega (torch.tensor): Shape (total_no_of_SE,)
     
     Returns a scalar Tensor (the NLL)
     """
@@ -116,6 +118,7 @@ def main():
     print(f"v (SE latents) shape   : {v.shape}")
     print("----------------------------------------\n")
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
+    print("-loglikelihood = ", negative_loglikelihood(Y, psi, omega, w, v))
     
 if __name__ == "__main__":
     main()
