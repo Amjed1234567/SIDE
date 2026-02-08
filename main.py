@@ -165,7 +165,10 @@ def main():
     plt.ylabel("Negative LogLikelihood")
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
-    plt.show()
+    
+    output_path = "negative_loglikelihood.png"   
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    print(f"Plot saved to {output_path}")
      
     ### End of plot. ###
             
