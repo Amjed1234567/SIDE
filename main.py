@@ -109,6 +109,15 @@ def negative_loglikelihood(Y, psi, omega, w, v):
     return -1*one_pair_of_ij.sum() 
 
 
+# Calculate the loss per matrix entry. 
+def print_progress(it, loss_tensor):
+    total_entries = total_no_of_drugs * total_no_of_SE
+    avg_per_entry = loss_tensor.item() / total_entries
+    print(
+        f"Iter {it:03d} - NLL = {loss_tensor.item():,.1f} "
+        f"(avg per entry = {avg_per_entry:.6f})"
+    )
+
 
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
@@ -152,7 +161,7 @@ def main():
         loss_history.append(loss.item())          
 
         if it % 20 == 0 or it == 1:               
-            print(f"Iter {it:03d} - NLL = {loss.item():.4f}")
+            print_progress(it, loss)
             
     ### End of training loop. ###
      
