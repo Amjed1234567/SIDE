@@ -107,6 +107,20 @@ def negative_loglikelihood(Y, psi, omega, w, v):
     return -1*one_pair_of_ij.sum() 
 
 
+### Convert parameters to learnable variables. ###
+
+#  Then the optimiser knows to compute gradients.
+psi = torch.nn.Parameter(psi.clone())
+omega = torch.nn.Parameter(omega.clone())
+w = torch.nn.Parameter(w.clone())
+v = torch.nn.Parameter(v.clone())
+
+### End of parameter convertion. ###
+
+optimizer = torch.optim.Adam([psi, omega, w, v], lr=0.01)
+
+
+
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
     print("Total number of side-effects = ", total_no_of_SE)
