@@ -151,7 +151,7 @@ def main():
         loss_history.append(loss.item())          
 
         if it % 20 == 0 or it == 1:               
-            print(f"Iter {it:03d} – NLL = {loss.item():.4f}")
+            print(f"Iter {it:03d} - NLL = {loss.item():.4f}")
             
     ### End of training loop. ###
      
@@ -160,9 +160,9 @@ def main():
      
     plt.figure(figsize=(8, 4))
     plt.plot(range(1, number_of_iterations + 1), loss_history, marker='o', markersize=3)
-    plt.title("Negative Log‑Likelihood (Eq. 13) vs. Iterations")
+    plt.title("Negative LogLikelihood vs. Iterations")
     plt.xlabel("Iteration")
-    plt.ylabel("Negative Log‑Likelihood")
+    plt.ylabel("Negative LogLikelihood")
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
     plt.show()
