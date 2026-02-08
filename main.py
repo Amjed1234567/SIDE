@@ -125,16 +125,16 @@ def main():
     
     
     ### Convert parameters to learnable tensors. ###
-
     #  Then the optimiser knows to compute gradients.
-    psi = torch.nn.Parameter(psi.clone())
-    omega = torch.nn.Parameter(omega.clone())
-    w = torch.nn.Parameter(w.clone())
-    v = torch.nn.Parameter(v.clone())
+    
+    psi_l = torch.nn.Parameter(psi.clone())
+    omega_l = torch.nn.Parameter(omega.clone())
+    w_l = torch.nn.Parameter(w.clone())
+    v_l = torch.nn.Parameter(v.clone())
 
     ### End of parameter convertion. ###
 
-    optimizer = torch.optim.Adam([psi, omega, w, v], lr=0.01)
+    optimizer = torch.optim.Adam([psi_l, omega_l, w_l, v_l], lr=0.01)
     
     
     ### Training loop. ###
@@ -144,7 +144,7 @@ def main():
     
     for it in range(1, number_of_iterations + 1):
         optimizer.zero_grad()   # Clear old grads.
-        loss = negative_loglikelihood(Y, psi, omega, w, v)
+        loss = negative_loglikelihood(Y, psi_l, omega_l, w_l, v_l)
         loss.backward()  # Back‑propagate.
         optimizer.step() # Take a gradient step.
 
