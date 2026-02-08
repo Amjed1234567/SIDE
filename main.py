@@ -134,7 +134,7 @@ def main():
 
     ### End of parameter convertion. ###
 
-    optimizer = torch.optim.Adam([psi_l, omega_l, w_l, v_l], lr=0.01)
+    optimizer = torch.optim.Adam([psi_l, omega_l, w_l, v_l], lr=0.01, weight_decay=1e-4)
     
     
     ### Training loop. ###
