@@ -134,8 +134,8 @@ def main():
 
     ### End of parameter convertion. ###
 
-    optimizer = torch.optim.Adam([psi_l, omega_l, w_l, v_l], lr=0.01, weight_decay=1e-4)
-    
+    optimizer = torch.optim.Adam([psi_l, omega_l, w_l, v_l], lr=0.001, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200, eta_min=1e-5)
     
     ### Training loop. ###
     
@@ -147,6 +147,7 @@ def main():
         loss = negative_loglikelihood(Y, psi_l, omega_l, w_l, v_l)
         loss.backward()  # Back‑propagate.
         optimizer.step() # Take a gradient step.
+        scheduler.step()
 
         loss_history.append(loss.item())          
 
