@@ -64,6 +64,7 @@ v = torch.from_numpy(np.random.randn(total_no_of_SE, latent_space_dimension)).fl
 
 ### End of initialization of parameters. ###
 
+
 def distance_in_latent_space(w, v):
     """Calculating distance betwen two points in latent space.
 
@@ -79,6 +80,7 @@ def distance_in_latent_space(w, v):
     difference = w[:, None, :] - v[None, :, :]
     # ord=2 is the Euclidean norm. 
     return torch.linalg.norm(difference, ord=2, dim=2)
+
     
 
 def negative_loglikelihood(Y, psi, omega, w, v):
@@ -107,19 +109,6 @@ def negative_loglikelihood(Y, psi, omega, w, v):
     return -1*one_pair_of_ij.sum() 
 
 
-### Convert parameters to learnable variables. ###
-
-#  Then the optimiser knows to compute gradients.
-psi = torch.nn.Parameter(psi.clone())
-omega = torch.nn.Parameter(omega.clone())
-w = torch.nn.Parameter(w.clone())
-v = torch.nn.Parameter(v.clone())
-
-### End of parameter convertion. ###
-
-optimizer = torch.optim.Adam([psi, omega, w, v], lr=0.01)
-
-
 
 def main():
     print("Total number of drugs = ", total_no_of_drugs)
@@ -134,5 +123,38 @@ def main():
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
     print("-loglikelihood = ", negative_loglikelihood(Y, psi, omega, w, v))
     
+    
+    ### Convert parameters to learnable tensors. ###
+
+    #  Then the optimiser knows to compute gradients.
+    psi = torch.nn.Parameter(psi.clone())
+    omega = torch.nn.Parameter(omega.clone())
+    w = torch.nn.Parameter(w.clone())
+    v = torch.nn.Parameter(v.clone())
+
+    ### End of parameter convertion. ###
+
+    optimizer = torch.optim.Adam([psi, omega, w, v], lr=0.01)
+    
+    
+    ### Training loop. ###
+    
+    number_of_iterations = 200
+    loss_history = []  # Store the NLL at each step
+    
+    for it in range(1, number_of_iterations + 1):
+        optimizer.zero_grad()   # Clear old grads.
+        loss = negative_loglikelihood(Y, psi, omega, w, v)
+        loss.backward()  # Back‑propagate.
+        optimizer.step() # Take a gradient step.
+
+        loss_history.append(loss.item())          
+
+        if it % 20 == 0 or it == 1:               
+            print(f"Iter {it:03d} – NLL = {loss.item():.4f}")
+            
+     ### End of training loop. ###
+            
+            
 if __name__ == "__main__":
     main()
