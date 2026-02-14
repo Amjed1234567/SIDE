@@ -151,7 +151,7 @@ def frequency_of_elements(Y_input:torch.tensor)->float:
     return freq_ones, freq_zeros
 
 
-# Randomly a certain percentage of the ones will become zeros.
+# Randomly a certain fraction (pct) of the ones will become zeros.
 def replace_ones_with_zeros(Y_original:torch.tensor, pct:float)->torch.tensor:
     
     out = Y_original.clone()
@@ -184,7 +184,16 @@ def main():
     print("Frequency of ones = ", one)
     print("Frequency of zeros = ", zero)
     print("----------------------------------------\n")
-    print("\n")       
+    print("\n") 
+    
+    print("\n--- Perturbed Y matrix data ---")
+    Y_perturbed = replace_ones_with_zeros(Y, 0.10)
+    print("Shape of perturbed Y matrix = ", Y_perturbed.shape)
+    one, zero = frequency_of_elements(Y_perturbed)
+    print("Frequency of ones = ", one)
+    print("Frequency of zeros = ", zero)
+    print("----------------------------------------\n")
+    print("\n")             
     
     print("\n--- Parameter initialisation summary ---")
     print(f"psi shape          : {psi.shape}")
