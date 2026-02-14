@@ -1,7 +1,27 @@
 import pandas as pd
 import torch
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import os 
+
+
+### Environment configuration (provided by bsub). ###
+
+#  lsd  – latent‑space dimension (integer).
+#  name – base name for the saved model file (string).
+DEFAULT_LATENT_DIM = 3                     # Default.
+DEFAULT_MODEL_NAME = "trained_model.pt"    # Default.
+
+try:
+    latent_space_dimension = int(os.getenv("lsd", DEFAULT_LATENT_DIM))
+except ValueError:
+    # If the user passes a non‑numeric string we keep the default
+    latent_space_dimension = DEFAULT_LATENT_DIM
+
+model_name = os.getenv("name", DEFAULT_MODEL_NAME)
+
+### End of environment configuration (provided by bsub). ###
+
 
 ### Data preparation section ###
 
@@ -45,7 +65,6 @@ for row in data_list_2D:
 
 ### Initialization of parameters. ###
 
-latent_space_dimension = 3
 seed_for_random = 42 # For reproducibility.
 torch.manual_seed(seed_for_random) 
 np.random.seed(seed_for_random)
@@ -131,6 +150,7 @@ def main():
     print("----------------------------------------\n")
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
     print("-loglikelihood = ", negative_loglikelihood(Y, psi, omega, w, v))
+    print("Latent space dimension", latent_space_dimension)
     
     
     ### Convert parameters to learnable tensors. ###
@@ -181,6 +201,21 @@ def main():
     print(f"Plot saved to {output_path}")
      
     ### End of plot. ###
+    
+    
+    ###  Save the trained model. ###
+    
+    checkpoint = {
+        "latent_dim": latent_space_dimension,
+        "psi":    psi_l.detach().cpu(),
+        "omega":  omega_l.detach().cpu(),
+        "w":      w_l.detach().cpu(),
+        "v":      v_l.detach().cpu(),
+    }
+    torch.save(checkpoint, model_name)
+    print(f"Model checkpoint saved as '{model_name}'")
+    
+    ###  End of save the trained model. ###
             
             
 if __name__ == "__main__":
