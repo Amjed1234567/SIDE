@@ -130,24 +130,51 @@ def negative_loglikelihood(Y, psi, omega, w, v):
 
 # Calculate the loss per matrix entry. 
 def print_progress(it, loss_tensor):
+    
     total_entries = total_no_of_drugs * total_no_of_SE
     avg_per_entry = loss_tensor.item() / total_entries
     print(
         f"Iter {it:03d} - NLL = {loss_tensor.item():,.1f} "
         f"(avg per entry = {avg_per_entry:.6f})"
     )
+    
+
+# calculate the frequency of ones and zeros.
+def frequency_of_elements(Y_input):
+    
+    total_no_of_elements = total_no_of_drugs * total_no_of_SE
+    ones = int(torch.count_nonzero(Y_input)) 
+    zeros = total_no_of_elements - ones 
+    freq_ones = ones / total_no_of_elements
+    freq_zeros = zeros / total_no_of_elements
+    
+    return freq_ones, freq_zeros
 
 
 def main():
+    print("\n--- Data information ---")
     print("Total number of drugs = ", total_no_of_drugs)
     print("Total number of side-effects = ", total_no_of_SE)
+    print("----------------------------------------\n")
+    print("\n")
+    
+    print("\n--- Y matrix data ---")
     print("Shape of Y matrix = ", Y.shape)
+    one, zero = frequency_of_elements(Y)
+    print("Frequency of ones = ", one)
+    print("Frequency of zeros = ", zero)
+    print("----------------------------------------\n")
+    print("\n")
+        
+    
     print("\n--- Parameter initialisation summary ---")
     print(f"psi shape          : {psi.shape}")
     print(f"omega shape        : {omega.shape}")
     print(f"w (drug latents) shape : {w.shape}")
     print(f"v (SE latents) shape   : {v.shape}")
     print("----------------------------------------\n")
+    print("\n")
+    
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
     print("-loglikelihood = ", negative_loglikelihood(Y, psi, omega, w, v))
     print("Latent space dimension", latent_space_dimension)
