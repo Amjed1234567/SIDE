@@ -84,7 +84,7 @@ v = torch.from_numpy(np.random.randn(total_no_of_SE, latent_space_dimension)).fl
 ### End of initialization of parameters. ###
 
 
-def distance_in_latent_space(w, v):
+def distance_in_latent_space(w, v)->float:
     """Calculating distance betwen two points in latent space.
 
     Args:
@@ -102,7 +102,7 @@ def distance_in_latent_space(w, v):
 
     
 
-def negative_loglikelihood(Y, psi, omega, w, v):
+def negative_loglikelihood(Y, psi, omega, w, v)->torch.tensor:
     """Calculating the negative loglikelihood (NLL).
     
     Args:
@@ -140,7 +140,7 @@ def print_progress(it, loss_tensor):
     
 
 # calculate the frequency of ones and zeros.
-def frequency_of_elements(Y_input):
+def frequency_of_elements(Y_input:torch.tensor)->float:
     
     total_no_of_elements = total_no_of_drugs * total_no_of_SE
     ones = int(torch.count_nonzero(Y_input)) 
@@ -149,6 +149,26 @@ def frequency_of_elements(Y_input):
     freq_zeros = zeros / total_no_of_elements
     
     return freq_ones, freq_zeros
+
+
+# Randomly a certain percentage of the ones will become zeros.
+def replace_ones_with_zeros(Y_original:torch.tensor, pct:float)->torch.tensor:
+    
+    out = Y_original.clone()
+    # Find [row, column] for each of the ones in the matrix. 
+    index = torch.nonzero(out == 1, as_tuple=False)   # shape (n_ones, 2)
+    n_ones = index.shape[0]  # Total number of ones.
+    # pct is the fraction we want to change to zeros.
+    n_drop = int(pct * n_ones)  # Absolute no.of ones to turn into zeros.
+    
+    # Randomly choose ones to be replaced.
+    rng = torch.Generator(device=out.device) 
+    perm = torch.randperm(n_ones, generator=rng, device=out.device)
+    
+    chosen_positions = index[perm[:n_drop]]  # shape (n_drop, 2)
+    out[chosen_positions[:, 0], chosen_positions[:, 1]] = 0
+    
+    return out
 
 
 def main():
@@ -164,8 +184,7 @@ def main():
     print("Frequency of ones = ", one)
     print("Frequency of zeros = ", zero)
     print("----------------------------------------\n")
-    print("\n")
-        
+    print("\n")       
     
     print("\n--- Parameter initialisation summary ---")
     print(f"psi shape          : {psi.shape}")
