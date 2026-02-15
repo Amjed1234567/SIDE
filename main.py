@@ -295,8 +295,8 @@ def main():
     y_true  = Y.reshape(-1).float().cpu().numpy()
     y_score = prob_matrix.reshape(-1).cpu().numpy()
     auc = roc_auc_score(y_true, y_score)
-    print("\n=== ROC‑AUC Evaluation ===")
-    print(f"ROC‑AUC = {auc:.4f}")
+    print("\n=== ROC-AUC Evaluation ===")
+    print(f"ROC-AUC = {auc:.4f}")
     
     ### End of ROC AUC ###
     
