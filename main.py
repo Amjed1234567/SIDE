@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import os 
-
+from sklearn.metrics import roc_auc_score
 
 ### Environment configuration (provided by bsub). ###
 
@@ -101,7 +101,6 @@ def distance_in_latent_space(w, v)->float:
     return torch.linalg.norm(difference, ord=2, dim=2)
 
     
-
 def negative_loglikelihood(Y, psi, omega, w, v)->torch.tensor:
     """Calculating the negative loglikelihood (NLL).
     
@@ -139,9 +138,15 @@ def print_progress(it, loss_tensor):
     )
     
 
-# calculate the frequency of ones and zeros.
 def frequency_of_elements(Y_input:torch.tensor)->float:
-    
+    """Calculating the frequency of ones and zeros.
+
+    Args:
+        Y_input (torch.tensor): Shape (total_no_of_drugs, total_no_of_SE) with entries 0/1.
+
+    Returns:
+        float: Two floats. Freqency of ones and zeros.
+    """
     total_no_of_elements = total_no_of_drugs * total_no_of_SE
     ones = int(torch.count_nonzero(Y_input)) 
     zeros = total_no_of_elements - ones 
@@ -151,9 +156,16 @@ def frequency_of_elements(Y_input:torch.tensor)->float:
     return freq_ones, freq_zeros
 
 
-# Randomly a certain fraction (pct) of the ones will become zeros.
 def replace_ones_with_zeros(Y_original:torch.tensor, pct:float)->torch.tensor:
-    
+    """Randomly a certain fraction (pct) of the ones will become zeros.
+
+    Args:
+        Y_original (torch.tensor): Shape (total_no_of_drugs, total_no_of_SE) with entries 0/1.
+        pct (float): The fraction of ones to become zeros. 
+
+    Returns:
+        torch.tensor: Shape (total_no_of_drugs, total_no_of_SE) with entries 0/1.
+    """   
     out = Y_original.clone()
     # Find [row, column] for each of the ones in the matrix. 
     index = torch.nonzero(out == 1, as_tuple=False)   # shape (n_ones, 2)
@@ -169,6 +181,23 @@ def replace_ones_with_zeros(Y_original:torch.tensor, pct:float)->torch.tensor:
     out[chosen_positions[:, 0], chosen_positions[:, 1]] = 0
     
     return out
+
+
+def edge_probability_matrix(psi, omega, w, v):
+    """Returns a matrix where each entry [i,j] is 
+        the model’s estimate that an edge exists.
+
+    Args:
+        w (torch.tensor): Shape (total_no_of_drugs, latent_space_dimension).
+        v (torch.tensor): Shape (total_no_of_SE, latent_space_dimension).
+        psi (torch.tensor): Shape (total_no_of_drugs,)
+        omega (torch.tensor): Shape (total_no_of_SE,)
+
+    Returns:
+        torch_tensor: Probability matrix.
+    """
+    eta = psi[:, None] + omega[None, :] - distance_in_latent_space(w, v)
+    return torch.sigmoid(eta)
 
 
 def main():
@@ -203,9 +232,11 @@ def main():
     print("----------------------------------------\n")
     print("\n")
     
+    print("\n--- Other information ---")
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
-    print("-loglikelihood = ", negative_loglikelihood(Y, psi, omega, w, v))
     print("Latent space dimension", latent_space_dimension)
+    print("----------------------------------------\n")
+    print("\n")
     
     
     ### Convert parameters to learnable tensors. ###
@@ -228,7 +259,7 @@ def main():
     
     for it in range(1, number_of_iterations + 1):
         optimizer.zero_grad()   # Clear old grads.
-        loss = negative_loglikelihood(Y, psi_l, omega_l, w_l, v_l)
+        loss = negative_loglikelihood(Y_perturbed, psi_l, omega_l, w_l, v_l)
         loss.backward()  # Back‑propagate.
         optimizer.step() # Take a gradient step.
         scheduler.step()
@@ -256,6 +287,18 @@ def main():
     print(f"Plot saved to {output_path}")
      
     ### End of plot. ###
+    
+    
+    ### ROC AUC section ###
+    
+    prob_matrix = edge_probability_matrix(psi_l.detach(), omega_l.detach(), w_l.detach(), v_l.detach())
+    y_true  = Y.reshape(-1).float().cpu().numpy()
+    y_score = prob_matrix.reshape(-1).cpu().numpy()
+    auc = roc_auc_score(y_true, y_score)
+    print("\n=== ROC‑AUC Evaluation ===")
+    print(f"ROC‑AUC = {auc:.4f}")
+    
+    ### End of ROC AUC ###
     
     
     ###  Save the trained model. ###
