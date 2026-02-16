@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import os 
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
 
 ### Environment configuration (provided by bsub). ###
 
@@ -200,6 +200,25 @@ def edge_probability_matrix(psi, omega, w, v):
     return torch.sigmoid(eta)
 
 
+def pr_auc_score(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    """
+    Compute the area under the Precision-Recall curve.
+
+    Args:
+        y_true (np.ndarray): Ground-truth binary labels (0 or 1), flattened.
+        y_score (np.ndarray): Predicted probabilities (output of the model), flattened.
+
+    Returns:
+        float: The PR-AUC.
+    """
+    # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html
+    # Arrays of precision, recall, and thresholds.
+    precision, recall, _ = precision_recall_curve(y_true, y_score)
+
+    # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.auc.html
+    return auc(recall, precision)
+
+
 def main():
     print("\n--- Data information ---")
     print("Total number of drugs = ", total_no_of_drugs)
@@ -289,16 +308,24 @@ def main():
     ### End of plot. ###
     
     
-    ### ROC AUC section ###
+    ### ROC-AUC and PR_AUC section ###
     
     prob_matrix = edge_probability_matrix(psi_l.detach(), omega_l.detach(), w_l.detach(), v_l.detach())
     y_true  = Y.reshape(-1).float().cpu().numpy()
     y_score = prob_matrix.reshape(-1).cpu().numpy()
+    
+    # ---- ROC‑AUC -----------------------
+    # https://www.scikit-yb.org/en/latest/api/classifier/rocauc.html
     auc = roc_auc_score(y_true, y_score)
     print("\n=== ROC-AUC Evaluation ===")
     print(f"ROC-AUC = {auc:.4f}")
     
-    ### End of ROC AUC ###
+    # ---- PR‑AUC -----------------------
+    pr_auc = pr_auc_score(y_true, y_score)
+    print("\n=== PR-AUC Evaluation ===")
+    print(f"PR-AUC (Average Precision) = {pr_auc:.4f}")
+    
+    ### End of ROC AUC and PR-AUC ###
     
     
     ###  Save the trained model. ###
