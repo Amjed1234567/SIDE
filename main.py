@@ -185,7 +185,7 @@ def replace_ones_with_zeros(Y_original:torch.tensor, pct:float)->torch.tensor:
 
 def edge_probability_matrix(psi, omega, w, v):
     """Returns a matrix where each entry [i,j] is 
-        the model’s estimate that an edge exists.
+        the model's estimate that an edge exists.
 
     Args:
         w (torch.tensor): Shape (total_no_of_drugs, latent_space_dimension).
@@ -219,6 +219,16 @@ def pr_auc_score(y_true: np.ndarray, y_score: np.ndarray) -> float:
     return auc(recall, precision)
 
 
+### Count ones and zeros in Y and Y_perturbed. ###
+
+one, zero = frequency_of_elements(Y)
+Y_perturbed = replace_ones_with_zeros(Y, 0.10)
+one_perturbed, zero_perturbed = frequency_of_elements(Y_perturbed)
+
+### End of counting ones and zeros in Y and Y_perturbed. ###
+
+
+
 def main():
     print("\n--- Data information ---")
     print("Total number of drugs = ", total_no_of_drugs)
@@ -228,18 +238,15 @@ def main():
     
     print("\n--- Y matrix data ---")
     print("Shape of Y matrix = ", Y.shape)
-    one, zero = frequency_of_elements(Y)
     print("Frequency of ones = ", one)
     print("Frequency of zeros = ", zero)
     print("----------------------------------------\n")
     print("\n") 
     
-    print("\n--- Perturbed Y matrix data ---")
-    Y_perturbed = replace_ones_with_zeros(Y, 0.10)
+    print("\n--- Perturbed Y matrix data ---")    
     print("Shape of perturbed Y matrix = ", Y_perturbed.shape)
-    one, zero = frequency_of_elements(Y_perturbed)
-    print("Frequency of ones = ", one)
-    print("Frequency of zeros = ", zero)
+    print("Frequency of ones = ", one_perturbed)
+    print("Frequency of zeros = ", zero_perturbed)
     print("----------------------------------------\n")
     print("\n")             
     
@@ -278,7 +285,7 @@ def main():
     
     for it in range(1, number_of_iterations + 1):
         optimizer.zero_grad()   # Clear old grads.
-        loss = negative_loglikelihood(Y_perturbed, psi_l, omega_l, w_l, v_l)
+        loss = negative_loglikelihood(Y, psi_l, omega_l, w_l, v_l)
         loss.backward()  # Back‑propagate.
         optimizer.step() # Take a gradient step.
         scheduler.step()
@@ -307,22 +314,42 @@ def main():
      
     ### End of plot. ###
     
+    ### Predict probabilities for entries. ###
+    
+    prob_matrix = edge_probability_matrix(psi_l.detach(), omega_l.detach(), w_l.detach(), v_l.detach())
+
+    # Flatten everything once – this makes indexing easy
+    prob_flat = prob_matrix.reshape(-1).cpu().numpy()          # model scores
+    Y_flat    = Y.reshape(-1).cpu().numpy()                    # ground‑truth (original)
+    Yp_flat   = Y_perturbed.reshape(-1).cpu().numpy()         # perturbed version
+    
+    ### End of predict probabilities for entries. ###
+    
+    
+    ### Build the evaluation set. ###
+    
+    # Keep only entries that are zero in the perturbed matrix.
+    # Label = 1 for false‑zeros (original Y = 1)
+    # Label = 0 for true‑zeros  (original Y = 0)
+
+    mask_zero_in_perturbed = (Yp_flat == 0) # Boolean mask (True where entry is zero).
+    labels = np.where(Y_flat == 1, 1, 0) # 1 = original edge, 0 = no edge.
+    
+    # Take the array labels and keep only those entries whose 
+    # corresponding position in mask_zero_in_perturbed is True.
+    eval_labels = labels[mask_zero_in_perturbed]   
+    eval_scores = prob_flat[mask_zero_in_perturbed]   # model probabilities for those entries.
+    
+    ### End of build the evaluation set. ###
     
     ### ROC-AUC and PR_AUC section ###
     
-    prob_matrix = edge_probability_matrix(psi_l.detach(), omega_l.detach(), w_l.detach(), v_l.detach())
-    y_true  = Y.reshape(-1).float().cpu().numpy()
-    y_score = prob_matrix.reshape(-1).cpu().numpy()
-    
-    # ---- ROC‑AUC -----------------------
     # https://www.scikit-yb.org/en/latest/api/classifier/rocauc.html
-    auc = roc_auc_score(y_true, y_score)
-    print("\n=== ROC-AUC Evaluation ===")
-    print(f"ROC-AUC = {auc:.4f}")
+    roc_auc = roc_auc_score(eval_labels, eval_scores)
+    pr_auc  = auc(*precision_recall_curve(eval_labels, eval_scores)[1:])    
     
-    # ---- PR‑AUC -----------------------
-    pr_auc = pr_auc_score(y_true, y_score)
-    print("\n=== PR-AUC Evaluation ===")
+    print("\n=== Zero-Prediction Evaluation ===")
+    print(f"ROC-AUC = {roc_auc:.4f}")
     print(f"PR-AUC (Average Precision) = {pr_auc:.4f}")
     
     ### End of ROC AUC and PR-AUC ###
