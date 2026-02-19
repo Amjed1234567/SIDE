@@ -346,10 +346,12 @@ def main():
     
     # https://www.scikit-yb.org/en/latest/api/classifier/rocauc.html
     roc_auc = roc_auc_score(eval_labels, eval_scores)
-    pr_auc  = auc(*precision_recall_curve(eval_labels, eval_scores)[1:])    
-    
     print("\n=== Zero-Prediction Evaluation ===")
     print(f"ROC-AUC = {roc_auc:.4f}")
+
+    # PR‑AUC using precision‑recall curve
+    precision, recall, _ = precision_recall_curve(eval_labels, eval_scores)
+    pr_auc = auc(recall, precision)   
     print(f"PR-AUC (Average Precision) = {pr_auc:.4f}")
     
     ### End of ROC AUC and PR-AUC ###
