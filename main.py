@@ -11,12 +11,15 @@ from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
 #  name – base name for the saved model file (string).
 DEFAULT_LATENT_DIM = 3                     # Default.
 DEFAULT_MODEL_NAME = "trained_model.pt"    # Default.
+DEFAULT_ITERATIONS = 200
 
 try:
     latent_space_dimension = int(os.getenv("lsd", DEFAULT_LATENT_DIM))
+    number_of_iterations = int(os.getenv("it", DEFAULT_ITERATIONS))
 except ValueError:
     # If the user passes a non‑numeric string we keep the default
     latent_space_dimension = DEFAULT_LATENT_DIM
+    number_of_iterations = DEFAULT_ITERATIONS
 
 model_name = os.getenv("name", DEFAULT_MODEL_NAME)
 
@@ -280,7 +283,7 @@ def main():
     
     ### Training loop. ###
     
-    number_of_iterations = 200
+    #number_of_iterations = 200
     loss_history = []  # Store the NLL at each step
     
     for it in range(1, number_of_iterations + 1):
