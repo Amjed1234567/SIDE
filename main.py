@@ -264,6 +264,7 @@ def main():
     print("\n--- Other information ---")
     print("distance tensor shape = ", distance_in_latent_space(w, v).shape)
     print("Latent space dimension", latent_space_dimension)
+    print("No. of iterations = ", number_of_iterations)
     print("----------------------------------------\n")
     print("\n")
     
@@ -295,7 +296,7 @@ def main():
 
         loss_history.append(loss.item())          
 
-        if it % 20 == 0 or it == 1:               
+        if it % 200 == 0 or it == 1:               
             print_progress(it, loss)
             
     ### End of training loop. ###
