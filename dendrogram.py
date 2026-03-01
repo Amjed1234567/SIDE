@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+
 # From https://scikit-learn.org/stable/auto_examples/cluster/plot_agglomerative_dendrogram.html
 # and https://www.datasciencebase.com/unsupervised-ml/algorithms/agglomerative-hierarchical-clustering/pytorch-example/
 from scipy.cluster.hierarchy import linkage, dendrogram

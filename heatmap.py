@@ -50,6 +50,7 @@ def leaf_order_from_linkage(latent):
     of a Ward dendrogram built on latent space. 
     """
     Z = linkage(latent, method="ward", metric="euclidean")
+    # From https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html
     dend = dendrogram(Z, no_plot=True)   # we only need the order
     return dend["leaves"]                # list of ints
 
@@ -64,7 +65,7 @@ drug_order = leaf_order_from_linkage(w.numpy())
 # Side‑effect order
 se_order   = leaf_order_from_linkage(v.numpy())
 
-# From
+# From https://numpy.org/doc/stable/reference/generated/numpy.ix_.html
 Y_ordered = Y_np[np.ix_(drug_order, se_order)] 
 
 plt.figure(figsize=(10, 8))
