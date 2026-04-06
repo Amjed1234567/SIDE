@@ -74,7 +74,7 @@ np.random.seed(seed_for_random)
 
 # Random effect psi. One value for each drug.
 psi = torch.from_numpy(np.random.randn(total_no_of_drugs)).float()
-# Random effect psi. One value for each side‑effect.
+# Random effect omega. One value for each side‑effect.
 omega = torch.from_numpy(np.random.randn(total_no_of_SE)).float()
 
 # Latent position w_i for each drug, shape (total_no_of_drugs, latent_space_dimension).
