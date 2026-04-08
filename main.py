@@ -11,6 +11,7 @@ from sklearn.metrics import roc_auc_score, precision_recall_curve, auc
 #  name – base name for the saved model file (string).
 DEFAULT_LATENT_DIM = 3                     # Default.
 DEFAULT_MODEL_NAME = "trained_model.pt"    # Default.
+DEFAULT_PLOT_NAME = "negative_loglikelihood.png"
 DEFAULT_ITERATIONS = 200
 
 try:
@@ -22,6 +23,7 @@ except ValueError:
     number_of_iterations = DEFAULT_ITERATIONS
 
 model_name = os.getenv("name", DEFAULT_MODEL_NAME)
+plot_name = os.getenv("plotname", DEFAULT_PLOT_NAME)
 
 ### End of environment configuration (provided by bsub). ###
 
@@ -312,7 +314,7 @@ def main():
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
     
-    output_path = "negative_loglikelihood.png"   
+    output_path = plot_name   
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     print(f"Plot saved to {output_path}")
      
